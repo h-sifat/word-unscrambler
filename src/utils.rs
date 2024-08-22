@@ -3,7 +3,7 @@ use regex::Regex;
 use std::collections::HashSet;
 
 lazy_static! {
-    static ref NEW_LINE_PATTERN: Regex = Regex::new(r"\r\n|\r|\n").unwrap();
+    static ref NEW_LINE_PATTERN: Regex = Regex::new(r"\r?\n|\s+").unwrap();
 }
 
 pub fn parse_words(file_content: &str) -> Vec<String> {
