@@ -103,11 +103,7 @@ fn search_words_from_node(node: Rc<Node>, query: HashMap<char, u8>, result: &mut
     for (char, _) in &query {
         if let Some(child) = node.children.borrow().get(&char) {
             if *child.is_word.borrow() {
-                let mut word_chars: Vec<char> = Vec::new();
-                collect_word(Rc::clone(child), &mut word_chars);
-
-                word_chars.reverse();
-                result.push(String::from_iter(word_chars));
+                result.push(collect_word(Rc::clone(child)));
             }
 
             search_words_from_node(
@@ -121,11 +117,17 @@ fn search_words_from_node(node: Rc<Node>, query: HashMap<char, u8>, result: &mut
 
 /// Traverse upwards from a node until it reaches the root node and keeps
 /// pushing each nodes char into given resulting Vec<char>.
-fn collect_word(node: Rc<Node>, chars: &mut Vec<char>) {
-    if let Some(parent) = node.parent.borrow().upgrade() {
-        chars.push(node.value);
-        collect_word(Rc::clone(&parent), chars);
+fn collect_word(node: Rc<Node>) -> String {
+    let mut chars: Vec<char> = Vec::new();
+
+    let mut current_node = node;
+    while let Some(parent) = Rc::clone(&current_node).parent.borrow().upgrade() {
+        chars.push(current_node.value);
+        current_node = parent
     }
+
+    chars.reverse();
+    String::from_iter(chars)
 }
 
 /// Decrements the given char from the query map. If count reaches to zero it
