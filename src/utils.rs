@@ -11,7 +11,7 @@ pub fn parse_words(file_content: &str) -> Vec<String> {
         .split(&file_content)
         .filter_map(|word| {
             let word = word.trim().to_lowercase().to_string();
-            if word.is_empty() || !word.is_ascii() {
+            if word.len() < 2 || !word.is_ascii() {
                 return None;
             }
             Some(word)

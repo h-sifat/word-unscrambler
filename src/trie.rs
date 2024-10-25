@@ -40,7 +40,7 @@ impl Trie {
         }
     }
 
-    pub fn from_words(words: &[&str]) -> Self {
+    pub fn from_words(words: &[String]) -> Self {
         let trie = Trie::new();
         trie.insert_many(words);
 
@@ -72,7 +72,7 @@ impl Trie {
         *current.is_word.borrow_mut() = true;
     }
 
-    pub fn insert_many(&self, words: &[&str]) {
+    pub fn insert_many(&self, words: &[String]) {
         for word in words {
             self.insert_word(word)
         }
@@ -174,7 +174,8 @@ mod test {
 
     #[test]
     fn test_trie_works() {
-        let trie = Trie::from_words(&["car", "cart", "cat", "cow", "cool"]);
+        let trie =
+            Trie::from_words(&["car", "cart", "cat", "cow", "cool"].map(|str| str.to_string()));
 
         let test = |query: &str, expected: &[&str]| {
             let mut result = trie.search_words(query);
