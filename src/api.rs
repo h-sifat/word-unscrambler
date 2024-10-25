@@ -4,15 +4,13 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Deserialize;
 use serde_json::json;
-use std::{env, fs};
+use std::fs;
 
 // -------- Constants --------------
 
 lazy_static! {
     static ref VALID_WORD_PATTERN: Regex = Regex::new("^[a-zA-Z-]+$").unwrap();
 }
-
-const WORDS_PATH: &str = "data/words.txt";
 
 // ----------- Struct --------------
 
@@ -38,8 +36,6 @@ pub async fn unscramble(
     state: web::Data<RouteState>,
     queries: web::Query<UnscrambleQuery>,
 ) -> impl Responder {
-    println!("received request");
-
     let word = match validate_query(queries.word.clone(), state.max_word_len) {
         Ok(word) => word,
         Err(message) => {
@@ -47,15 +43,15 @@ pub async fn unscramble(
         }
     };
 
+    println!("request -> unscramble: '{}'", word);
+
     HttpResponse::Ok().json(json!({"words": state.trie.search_words(&word)}))
 }
 
 // ---------- Utils ------------
-pub fn get_words_state() -> WordsState {
+pub fn get_words_state(words_file_path: &str) -> WordsState {
     let words = {
-        let current_dir = env::current_dir().unwrap().join(WORDS_PATH);
-        let file_content = fs::read_to_string(current_dir).unwrap();
-
+        let file_content = fs::read_to_string(words_file_path).unwrap();
         parse_words(&file_content)
     };
 
