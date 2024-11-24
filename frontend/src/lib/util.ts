@@ -22,3 +22,13 @@ function swap(arr: any[], i: number, j: number) {
   arr[i] = arr[j];
   arr[j] = temp;
 }
+
+export function sortWordsBasedOnLength(words: string[]): [number, string[]][] {
+  const sorted: Record<number, string[]> = {};
+
+  for (const word of words) (sorted[word.length] ||= []).push(word);
+
+  Object.values(sorted).forEach((array) => array.sort());
+
+  return <any>Object.entries(sorted).sort(([lenA], [lenB]) => +lenB - +lenA);
+}

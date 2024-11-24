@@ -27,11 +27,8 @@
   let shuffleIntervalId = $state(null);
 
   $effect(() => {
-    console.log("isRunning:", isRunning);
-
     if (isRunning && !shuffleIntervalId) {
       shuffleIntervalId = setInterval(() => {
-        // console.log("here");
         animatedQuery = shuffleStr(animatedQuery);
       }, 50);
     }
