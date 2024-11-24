@@ -1,89 +1,182 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { Status } from "./util";
+  import { shuffleStr, Status } from "./util";
 
-  const { status = Status.IDLE } = $props<{
-    status?: Status;
+  let {
+    result = "",
+    status = Status.ERROR,
+    onSubmit = console.log,
+    onStopQuery = () => console.log("stop query!"),
+  } = $props<{
     result?: string;
+    status?: Status;
+    onStopQuery: () => void;
+    onSubmit: (query: string) => void;
   }>();
 
-  let query = $state("");
-  let animatedQuery = $state("");
+  let isIdle = $derived(status === Status.IDLE);
+  let isError = $derived(status === Status.ERROR);
+  let isRunning = $derived(status === Status.RUNNING);
+  let isCompleted = $derived(status === Status.COMPLETED);
+
+  let query = $state("hello");
+  let animatedQuery = $state("hello-there");
 
   let inputError = $state(false);
-</script>
+  let shakeTimerId = $state(null);
+  let shuffleIntervalId = $state(null);
 
-<label
-  class={clsx(
-    "flex items-center mx-auto mt-8  max-w-96 gap-5",
-    "border-2 border-black input input-bordered",
-    { "shake input-error": inputError }
-  )}
->
-  <input
-    type="text"
-    onbeforeinput={(e) => {
-      // if (e.data) e.preventDefault();
-      const input = String(e.data || "").trim();
-      const isInvalid = /[^a-zA-Z-]/g.test(input);
+  $effect(() => {
+    console.log("isRunning:", isRunning);
 
-      if (isInvalid) {
-        e.preventDefault();
+    if (isRunning && !shuffleIntervalId) {
+      shuffleIntervalId = setInterval(() => {
+        // console.log("here");
+        animatedQuery = shuffleStr(animatedQuery);
+      }, 50);
+    }
 
+    if (!isRunning && shuffleIntervalId) {
+      clearInterval(shuffleIntervalId);
+      shuffleIntervalId = null;
+    }
+
+    if (isCompleted && result) {
+      query = animatedQuery = result;
+    }
+  });
+
+  function validateDataBeforeInput(
+    e: InputEvent & { currentTarget: EventTarget & HTMLInputElement }
+  ) {
+    const input = String(e.data || "").trim();
+    const isInvalid = /[^a-zA-Z-\s]/g.test(input);
+
+    if (isInvalid) {
+      e.preventDefault();
+
+      if (!shakeTimerId) {
         inputError = true;
-        setTimeout(() => {
+
+        shakeTimerId = setTimeout(() => {
           inputError = false;
+          shakeTimerId = null;
         }, 200);
       }
+    }
+  }
 
-      // query += input;
-      // console.log(
-      //   `isInvalid: ${isInvalid}; input: "${input}"; e.target.value:"${e.target.value}"`
-      // );
-    }}
-    oninput={(e) => {
-      console.log("e.target.data:", e.target.value);
-      query = "hi";
-    }}
-    placeholder="Search (Ctrl + k)"
-    class="grow placeholder:select-none"
-    disabled={status === Status.RUNNING}
-    value={status === Status.RUNNING ? animatedQuery : query}
-  />
+  function handleInput(e: any) {
+    const rawInput = String(e?.target?.value || "");
+    const trimmedInput = rawInput
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-zA-Z-]/g, "");
 
-  <div class="tooltip" data-tip="Enter">
-    <button
-      aria-label="Search"
-      class={clsx("btn btn-sm btn-circle", {
-        "btn-accent": status === Status.IDLE,
-        "btn-error": status === Status.RUNNING,
-      })}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-search-x"
+    if (trimmedInput !== rawInput) {
+      e.target.value = trimmedInput;
+    }
+
+    animatedQuery = query = trimmedInput;
+  }
+
+  function handleSubmit(e: any) {
+    e?.preventDefault?.();
+    if (query) onSubmit(query);
+  }
+
+  function handleBtnClick(e: any) {
+    e?.preventDefault?.();
+
+    if (isRunning) {
+      onStopQuery();
+      return;
+    }
+
+    if (isCompleted || isError) {
+      query = "";
+      animatedQuery = "";
+      status = Status.IDLE;
+      return;
+    }
+
+    if (query) onSubmit(query);
+  }
+</script>
+
+<form onsubmit={handleSubmit}>
+  <label
+    class={clsx(
+      "flex items-center mx-auto mt-8  max-w-96 gap-5",
+      "border-2 border-black input input-bordered",
+      { "shake input-error": inputError }
+    )}
+  >
+    <input
+      type="text"
+      spellcheck="false"
+      disabled={isRunning}
+      oninput={handleInput}
+      placeholder="Search (Ctrl + k)"
+      class={"grow placeholder:select-none"}
+      onbeforeinput={validateDataBeforeInput}
+      value={isRunning ? animatedQuery : query}
+    />
+
+    <div class="tooltip" data-tip={isIdle ? "Enter" : null}>
+      <button
+        disabled={!query}
+        aria-label="Search"
+        onclick={handleBtnClick}
+        class={clsx("btn btn-sm btn-circle", {
+          "btn-accent": isIdle,
+          "btn-error": isRunning || isError,
+        })}
       >
-        <!-- X -->
-        {#if status === Status.RUNNING}
-          <path d="m13.5 8.5-5 5" />
-          <path d="m8.5 8.5 5 5" />
-        {/if}
+        {#if isIdle || isRunning}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-search-x"
+          >
+            <!-- X -->
+            {#if isRunning}
+              <path d="m13.5 8.5-5 5" />
+              <path d="m8.5 8.5 5 5" />
+            {/if}
 
-        <!-- Glass -->
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-    </button>
-  </div>
-</label>
+            <!-- Glass -->
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        {:else}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-x"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        {/if}
+      </button>
+    </div>
+  </label>
+</form>
 
 <style>
   .shake {
