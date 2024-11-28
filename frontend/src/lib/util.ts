@@ -1,9 +1,4 @@
-export const enum Status {
-  IDLE = "idle",
-  ERROR = "error",
-  RUNNING = "running",
-  COMPLETED = "completed",
-}
+import { Status } from "./interface";
 
 export function shuffleStr(str: string) {
   const chars = str.split("");
@@ -31,4 +26,13 @@ export function sortWordsBasedOnLength(words: string[]): [number, string[]][] {
   Object.values(sorted).forEach((array) => array.sort());
 
   return <any>Object.entries(sorted).sort(([lenA], [lenB]) => +lenB - +lenA);
+}
+
+export function statusToBoolean(status: Status) {
+  return {
+    isIdle: status === Status.IDLE,
+    isError: status === Status.ERROR,
+    isRunning: status === Status.RUNNING,
+    isCompleted: status === Status.COMPLETED,
+  } as const;
 }

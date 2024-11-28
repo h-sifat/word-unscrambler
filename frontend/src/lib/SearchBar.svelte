@@ -1,12 +1,13 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { shuffleStr, Status } from "./util";
+  import { Status } from "./interface";
+  import { shuffleStr, statusToBoolean } from "./util";
 
   let {
     result = "",
     status = Status.ERROR,
-    onSubmit = console.log,
     onStopQuery = () => console.log("stop query!"),
+    onSubmit = (query: string) => console.log(`submit: '${query}'`),
   } = $props<{
     result?: string;
     status?: Status;
@@ -14,17 +15,21 @@
     onSubmit: (query: string) => void;
   }>();
 
-  let isIdle = $derived(status === Status.IDLE);
-  let isError = $derived(status === Status.ERROR);
-  let isRunning = $derived(status === Status.RUNNING);
-  let isCompleted = $derived(status === Status.COMPLETED);
+  let inputElement: HTMLInputElement;
 
-  let query = $state("hello");
-  let animatedQuery = $state("hello-there");
+  let { isError, isCompleted, isIdle, isRunning } = $derived(
+    statusToBoolean(status)
+  );
+
+  let query = $state("");
+  let animatedQuery = $state("");
 
   let inputError = $state(false);
   let shakeTimerId = $state(null);
   let shuffleIntervalId = $state(null);
+  let displayedInputValue = $derived(
+    isCompleted && result ? result : isRunning ? animatedQuery : query
+  );
 
   $effect(() => {
     if (isRunning && !shuffleIntervalId) {
@@ -36,10 +41,6 @@
     if (!isRunning && shuffleIntervalId) {
       clearInterval(shuffleIntervalId);
       shuffleIntervalId = null;
-    }
-
-    if (isCompleted && result) {
-      query = animatedQuery = result;
     }
   });
 
@@ -65,6 +66,7 @@
 
   function handleInput(e: any) {
     const rawInput = String(e?.target?.value || "");
+
     const trimmedInput = rawInput
       .trim()
       .toLowerCase()
@@ -91,14 +93,27 @@
     }
 
     if (isCompleted || isError) {
-      query = "";
-      animatedQuery = "";
+      resetQuery();
       status = Status.IDLE;
+
+      focusInput();
+
       return;
     }
 
     if (query) onSubmit(query);
   }
+
+  export function focusInput() {
+    inputElement?.focus?.();
+  }
+
+  export function resetQuery() {
+    query = "";
+    animatedQuery = "";
+  }
+
+  $inspect(`query: '${query}'`);
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -114,14 +129,19 @@
       spellcheck="false"
       disabled={isRunning}
       oninput={handleInput}
+      bind:this={inputElement}
+      value={displayedInputValue}
       placeholder="Search (Ctrl + k)"
       class={"grow placeholder:select-none"}
       onbeforeinput={validateDataBeforeInput}
-      value={isRunning ? animatedQuery : query}
+      onfocus={() => {
+        if (isCompleted || isError) status = Status.IDLE;
+      }}
     />
 
     <div class="tooltip" data-tip={isIdle ? "Enter" : null}>
       <button
+        type="button"
         disabled={!query}
         aria-label="Search"
         onclick={handleBtnClick}
@@ -149,11 +169,12 @@
               <path d="m8.5 8.5 5 5" />
             {/if}
 
-            <!-- Glass -->
+            <!-- Search Glass -->
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
         {:else}
+          <!-- X (clear) icon -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
