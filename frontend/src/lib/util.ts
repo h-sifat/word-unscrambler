@@ -1,3 +1,4 @@
+import { MAX_WORD_LEN } from "../config";
 import { Status } from "./interface";
 
 export function shuffleStr(str: string) {
@@ -35,4 +36,17 @@ export function statusToBoolean(status: Status) {
     isRunning: status === Status.RUNNING,
     isCompleted: status === Status.COMPLETED,
   } as const;
+}
+
+export function validateQuery(query: string) {
+  let message: string;
+
+  if (!query) message = "Query cannot be empty.";
+  else if (query.length < 3)
+    message = "Query must be at least 3 characters long.";
+  else if (query.length > MAX_WORD_LEN)
+    message = `Query cannot be longer than ${MAX_WORD_LEN} characters.`;
+  else message = "";
+
+  return { isValid: !message, message };
 }

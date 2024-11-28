@@ -1,8 +1,9 @@
 <script lang="ts">
-  import SearchBar from "./lib/SearchBar.svelte";
-  import Results from "./lib/Results.svelte";
+  import { tick } from "svelte";
   import { API } from "./lib/api";
   import { Status } from "./lib/interface";
+  import Results from "./lib/Results.svelte";
+  import SearchBar from "./lib/SearchBar.svelte";
 
   const api = new API();
 
@@ -15,11 +16,15 @@
 
   let searchBar: any;
 
-  function onDelete() {
+  async function onDelete(arg: { resetQuery?: boolean } = {}) {
     api.stopOrReset();
 
     if (searchBar) {
-      searchBar.resetQuery();
+      const { resetQuery = true } = arg;
+      if (resetQuery) searchBar.resetQuery();
+
+      await tick();
+
       searchBar.focusInput();
     }
   }

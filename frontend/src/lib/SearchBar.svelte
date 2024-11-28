@@ -1,7 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
   import { Status } from "./interface";
-  import { shuffleStr, statusToBoolean } from "./util";
+  import { MAX_WORD_LEN } from "../config";
+  import { shuffleStr, statusToBoolean, validateQuery } from "./util";
 
   let {
     result = "",
@@ -11,8 +12,8 @@
   } = $props<{
     result?: string;
     status?: Status;
-    onStopQuery: () => void;
     onSubmit: (query: string) => void;
+    onStopQuery: (arg?: { resetQuery?: boolean }) => void;
   }>();
 
   let inputElement: HTMLInputElement;
@@ -23,6 +24,9 @@
 
   let query = $state("");
   let animatedQuery = $state("");
+  let { isValid: isQueryValid, message: queryErrorMessage } = $derived(
+    validateQuery(query)
+  );
 
   let inputError = $state(false);
   let shakeTimerId = $state(null);
@@ -50,17 +54,10 @@
     const input = String(e.data || "").trim();
     const isInvalid = /[^a-zA-Z-\s]/g.test(input);
 
-    if (isInvalid) {
+    if (isInvalid || (input && query.length > MAX_WORD_LEN)) {
       e.preventDefault();
 
-      if (!shakeTimerId) {
-        inputError = true;
-
-        shakeTimerId = setTimeout(() => {
-          inputError = false;
-          shakeTimerId = null;
-        }, 200);
-      }
+      shakeInput();
     }
   }
 
@@ -81,6 +78,12 @@
 
   function handleSubmit(e: any) {
     e?.preventDefault?.();
+
+    if (!isQueryValid) {
+      shakeInput();
+      return;
+    }
+
     if (query) onSubmit(query);
   }
 
@@ -88,7 +91,7 @@
     e?.preventDefault?.();
 
     if (isRunning) {
-      onStopQuery();
+      onStopQuery({ resetQuery: false });
       return;
     }
 
@@ -101,7 +104,18 @@
       return;
     }
 
-    if (query) onSubmit(query);
+    if (query && isQueryValid) onSubmit(query);
+  }
+
+  function shakeInput() {
+    if (!shakeTimerId) {
+      inputError = true;
+
+      shakeTimerId = setTimeout(() => {
+        inputError = false;
+        shakeTimerId = null;
+      }, 200);
+    }
   }
 
   export function focusInput() {
@@ -113,7 +127,7 @@
     animatedQuery = "";
   }
 
-  $inspect(`query: '${query}'`);
+  $inspect(`query: '${query}', isQueryValid: ${isQueryValid}`);
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -142,9 +156,9 @@
     <div class="tooltip" data-tip={isIdle ? "Enter" : null}>
       <button
         type="button"
-        disabled={!query}
         aria-label="Search"
         onclick={handleBtnClick}
+        disabled={!query || !isQueryValid}
         class={clsx("btn btn-sm btn-circle", {
           "btn-accent": isIdle,
           "btn-error": isRunning || isError,
@@ -194,6 +208,11 @@
       </button>
     </div>
   </label>
+  {#if !isQueryValid && query}
+    <p class={clsx("text-xs text-center mt-0.5 text-error")}>
+      {queryErrorMessage}
+    </p>
+  {/if}
 </form>
 
 <style>
