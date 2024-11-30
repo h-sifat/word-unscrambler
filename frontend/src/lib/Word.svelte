@@ -46,8 +46,7 @@
   let { word } = $props<{ word: string }>();
 
   let isAnimationRunning = $state(false);
-
-  // $inspect("isAnimationRunning:", isAnimationRunning);
+  let hasClicked = $state(false);
 </script>
 
 <button
@@ -57,6 +56,10 @@
     { "active:ring-2 active:ring-inset": !isAnimationRunning }
   )}
   onclick={() => {
+    if (!hasClicked) {
+      hasClicked = true;
+    }
+
     if (isAnimationRunning) return;
     isAnimationRunning = true;
   }}
@@ -73,22 +76,25 @@
     Copied!
   </span>
 
-  {#each postions as [_, __, size, isTransparent], idx (idx)}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <span
-      onanimationend={() => (isAnimationRunning = false)}
-      class={clsx(
-        "absolute border-accent rounded-full -z-10 invisible",
-        `word-${idx}`,
-        {
-          "bg-orange-600": !isTransparent,
-          "copy-confetti-animation": isAnimationRunning,
-        }
-      )}
-      style="width: {size}px; height: {size}px; border-width: 1.5px"
-    ></span>
-  {/each}
+  <!-- Render them lazily -->
+  {#if hasClicked}
+    {#each postions as [_, __, size, isTransparent], idx (idx)}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <span
+        onanimationend={() => (isAnimationRunning = false)}
+        class={clsx(
+          "absolute border-accent rounded-full -z-10 invisible",
+          `word-${idx}`,
+          {
+            "bg-orange-600": !isTransparent,
+            "copy-confetti-animation": isAnimationRunning,
+          }
+        )}
+        style="width: {size}px; height: {size}px; border-width: 1.5px"
+      ></span>
+    {/each}
+  {/if}
 </button>
 
 <style>
