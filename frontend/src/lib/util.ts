@@ -38,7 +38,9 @@ export function statusToBoolean(status: Status) {
   } as const;
 }
 
-export function validateQuery(query: string) {
+export function validateQuery(arg: { query: string; prevQuery?: string }) {
+  const { query, prevQuery = null } = arg;
+
   let message: string;
 
   if (!query) message = "Query cannot be empty.";
@@ -46,6 +48,7 @@ export function validateQuery(query: string) {
     message = "Query must be at least 3 characters long.";
   else if (query.length > MAX_WORD_LEN)
     message = `Query cannot be longer than ${MAX_WORD_LEN} characters.`;
+  else if (query === prevQuery) message = "Same as previous query.";
   else message = "";
 
   return { isValid: !message, message };

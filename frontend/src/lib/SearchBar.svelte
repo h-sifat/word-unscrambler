@@ -6,12 +6,14 @@
 
   let {
     result = "",
+    prevQuery = null,
     status = Status.ERROR,
     onStopQuery = () => console.log("stop query!"),
     onSubmit = (query: string) => console.log(`submit: '${query}'`),
   } = $props<{
     result?: string;
     status?: Status;
+    prevQuery?: string;
     onSubmit: (query: string) => void;
     onStopQuery: (arg?: { resetQuery?: boolean }) => void;
   }>();
@@ -25,7 +27,7 @@
   let query = $state("");
   let animatedQuery = $state("");
   let { isValid: isQueryValid, message: queryErrorMessage } = $derived(
-    validateQuery(query)
+    validateQuery({ query, prevQuery })
   );
 
   let inputError = $state(false);
@@ -45,6 +47,10 @@
     if (!isRunning && shuffleIntervalId) {
       clearInterval(shuffleIntervalId);
       shuffleIntervalId = null;
+    }
+
+    if (isCompleted && result) {
+      query = animatedQuery = result;
     }
   });
 
@@ -126,8 +132,6 @@
     query = "";
     animatedQuery = "";
   }
-
-  $inspect(`query: '${query}', isQueryValid: ${isQueryValid}`);
 </script>
 
 <form onsubmit={handleSubmit}>

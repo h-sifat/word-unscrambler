@@ -39,6 +39,7 @@
     bind:this={searchBar}
     onStopQuery={onDelete}
     status={$state.status}
+    prevQuery={$state.status === Status.COMPLETED ? $state.data.query : null}
   />
 
   <div class="mx-auto mt-8" style="width: 80%;">
