@@ -1,4 +1,7 @@
-use crate::{trie::Trie, utils::parse_words};
+use crate::{
+    trie::Trie,
+    utils::{current_time_ms, parse_words},
+};
 use actix_web::{get, web, HttpResponse, Responder};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -43,9 +46,17 @@ pub async fn unscramble(
         }
     };
 
+    let start_time_ms = current_time_ms();
+    let results = state.trie.search_words(&word);
+    let end_time_ms = current_time_ms();
+
     println!("request -> unscramble: '{}'", word);
 
-    HttpResponse::Ok().json(json!({"words": state.trie.search_words(&word)}))
+    HttpResponse::Ok().json(json!({
+        "query": &word,
+        "possibleWords": results,
+        "searchTime": end_time_ms - start_time_ms
+    }))
 }
 
 // ---------- Utils ------------

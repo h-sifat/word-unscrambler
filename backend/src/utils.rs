@@ -1,6 +1,9 @@
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 lazy_static! {
     static ref NEW_LINE_PATTERN: Regex = Regex::new(r"\r?\n|\s+").unwrap();
@@ -19,4 +22,11 @@ pub fn parse_words(file_content: &str) -> Vec<String> {
         .collect::<HashSet<String>>()
         .into_iter()
         .collect()
+}
+
+pub fn current_time_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards.")
+        .as_millis()
 }
