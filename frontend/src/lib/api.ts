@@ -1,12 +1,14 @@
-import { type API_State, Status } from "./interface";
+import { type API_State, Status, type API_Response } from "./interface";
 import { writable, type Subscriber, type Readable } from "svelte/store";
+import { sortWordsBasedOnLength } from "./util";
 
 export class API {
-  #stateStore: Readable<API_State>;
-  #updateStore: Subscriber<API_State>;
+  readonly #controller = new AbortController();
+
+  readonly #stateStore: Readable<API_State>;
+  readonly #updateStore: Subscriber<API_State>;
 
   #state: API_State = Object.freeze({ status: Status.IDLE });
-  #timerId: any;
 
   constructor() {
     const { set, subscribe } = writable<API_State>(this.#state);
@@ -32,43 +34,54 @@ export class API {
     return this.#state.status === Status.IDLE;
   }
 
-  search(query: string) {
-    console.log("search:", query);
-
+  async search(query: string) {
     if (this.isRunning) return;
+
+    {
+      const hasAlreadyFetchedResult =
+        this.#state.status === Status.COMPLETED &&
+        this.#state.data.query === query;
+
+      if (hasAlreadyFetchedResult) return;
+    }
 
     this.#setState({ status: Status.RUNNING });
 
-    this.#timerId = setTimeout(() => {
-      if (Math.random() > 0.5) {
-        this.#setState({
-          status: Status.COMPLETED,
-          data: {
-            possibleWords: ["hello", "there", "how", "are", "you"],
-            query: "elloh",
-            searchTime: 23,
-            sortedWords: [
-              [5, ["hello", "there"]],
-              [3, ["how", "are", "you"]],
-            ],
-            topMatch: "hello",
-          },
+    try {
+      const rawResponse = await fetch(makeUrl(query), {
+        signal: this.#controller.signal,
+      });
+
+      const response = (await rawResponse.json()) as API_Response;
+
+      if (!response.possibleWords?.length)
+        return this.#setState({
+          status: Status.ERROR,
+          message: `Sorry, no words found :(`,
         });
 
-        return;
-      }
+      const sortedWords = sortWordsBasedOnLength(response.possibleWords);
 
       this.#setState({
-        status: Status.ERROR,
-        message: `Could not connect to server. [id: ${Math.random()}]`,
+        status: Status.COMPLETED,
+        data: { ...response, sortedWords, topMatch: sortedWords[0][1][0] },
       });
-    }, Math.random() * 3000 + 1000);
+    } catch (ex) {
+      this.#setState({
+        status: Status.ERROR,
+        message: ex?.message || "Server error or could not connect :(",
+      });
+    }
   }
 
   stopOrReset() {
     if (this.isIdle) return;
 
-    clearTimeout(this.#timerId);
+    if (this.isRunning) this.#controller.abort();
     this.#setState({ status: Status.IDLE });
   }
+}
+
+function makeUrl(word: string) {
+  return encodeURI(`http://localhost:8080/unscramble?word=${word}`);
 }
