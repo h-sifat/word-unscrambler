@@ -2,7 +2,7 @@ use crate::{
     trie::Trie,
     utils::{current_time_ms, parse_words},
 };
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, http::StatusCode, web, HttpResponse, Responder};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Deserialize;
@@ -52,11 +52,14 @@ pub async fn unscramble(
 
     println!("request -> unscramble: '{}'", word);
 
-    HttpResponse::Ok().json(json!({
-        "query": &word,
-        "possibleWords": results,
-        "searchTime": end_time_ms - start_time_ms
-    }))
+    HttpResponse::build(StatusCode::OK)
+        .insert_header(("Access-Control-Allow-Origin", "http://localhost:5173"))
+        .insert_header(("Access-Control-Allow-Methods", "GET, POST, OPTIONS"))
+        .json(json!({
+            "query": &word,
+            "possibleWords": results,
+            "searchTime": end_time_ms - start_time_ms
+        }))
 }
 
 // ---------- Utils ------------
