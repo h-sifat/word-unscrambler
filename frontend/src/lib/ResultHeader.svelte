@@ -14,7 +14,8 @@
   <div class="text-center">
     <h2 class="text-xl font-bold leading-none">Results</h2>
     <p class="text-sm lowercase">
-      for ({query}); found {resultCount} word(s) in {searchTime}ms
+      for (<span class="select-text">{query}</span>); found {resultCount} word(s)
+      in {searchTime}ms
     </p>
   </div>
 
