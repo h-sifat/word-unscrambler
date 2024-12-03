@@ -53,3 +53,11 @@ export function validateQuery(arg: { query: string; prevQuery?: string }) {
 
   return { isValid: !message, message };
 }
+
+export async function writeClipboardText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    alert("Could not copy text to clipboard!");
+  }
+}

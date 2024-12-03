@@ -42,11 +42,23 @@
 
 <script lang="ts">
   import clsx from "clsx";
+  import { writeClipboardText } from "./util";
 
   let { word } = $props<{ word: string }>();
 
   let isAnimationRunning = $state(false);
   let hasClicked = $state(false);
+
+  function handleClick() {
+    writeClipboardText(word);
+
+    if (!hasClicked) {
+      hasClicked = true;
+    }
+
+    if (isAnimationRunning) return;
+    isAnimationRunning = true;
+  }
 </script>
 
 <button
@@ -55,14 +67,7 @@
     "hover:border-accent rounded ring-accent bg-base-100",
     { "active:ring-2 active:ring-inset": !isAnimationRunning }
   )}
-  onclick={() => {
-    if (!hasClicked) {
-      hasClicked = true;
-    }
-
-    if (isAnimationRunning) return;
-    isAnimationRunning = true;
-  }}
+  onclick={handleClick}
   >{word}
 
   <span
