@@ -157,7 +157,7 @@
       }}
     />
 
-    <div class="tooltip" data-tip={isIdle ? "Enter" : null}>
+    <div class="tooltip" data-tip={isIdle && isQueryValid ? "Enter" : null}>
       <button
         type="button"
         aria-label="Search"
@@ -212,11 +212,14 @@
       </button>
     </div>
   </label>
-  {#if !isQueryValid && query}
-    <p class={clsx("text-xs text-center mt-0.5 text-error")}>
-      {queryErrorMessage}
-    </p>
-  {/if}
+
+  <p
+    class={clsx("text-xs text-center mt-0.5 text-error invisible", {
+      "!visible": !isQueryValid && query,
+    })}
+  >
+    {queryErrorMessage}&nbsp;
+  </p>
 </form>
 
 <style>

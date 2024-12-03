@@ -28,8 +28,26 @@
       searchBar.focusInput();
     }
   }
+
+  window.onkeydown = (e: KeyboardEvent) => {
+    const hasMetaKey = e.ctrlKey || e.metaKey;
+
+    if (!hasMetaKey) return;
+
+    if (e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      searchBar.focusInput();
+      return;
+    }
+
+    if (e.key.toLowerCase() === "l") {
+      e.preventDefault();
+      onDelete();
+    }
+  };
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="min-h-screen p-2 mx-auto max-w-screen-xl">
   <h1 class="mt-10 text-4xl font-bold text-center">Word Unscrambler</h1>
 
@@ -42,7 +60,7 @@
     prevQuery={$state.status === Status.COMPLETED ? $state.data.query : null}
   />
 
-  <div class="mx-auto mt-8" style="width: 80%;">
+  <div class="mx-auto mt-4" style="width: 80%;">
     {#if $state.status === Status.COMPLETED}
       <Results {onDelete} result={$state.data} />
     {:else if $state.status === Status.ERROR}
