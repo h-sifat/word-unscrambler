@@ -1,6 +1,7 @@
 import { type API_State, Status, type API_Response } from "./interface";
 import { writable, type Subscriber, type Readable } from "svelte/store";
 import { sortWordsBasedOnLength } from "./util";
+import { BASE_URL } from "../config";
 
 export class API {
   readonly #controller = new AbortController();
@@ -83,5 +84,5 @@ export class API {
 }
 
 function makeUrl(word: string) {
-  return encodeURI(`http://localhost:8080/unscramble?word=${word}`);
+  return encodeURI(`${BASE_URL}/unscramble?word=${word}`);
 }
