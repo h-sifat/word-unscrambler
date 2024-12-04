@@ -28,6 +28,16 @@
       <line x1="14" x2="14" y1="11" y2="17" />
     </svg>
 
-    <span class="sm:hidden"> Clear Results </span>
+    <span class="sm:hidden">
+      Clear <span class="extra-label">Results </span></span
+    >
   </button>
 </div>
+
+<style>
+  @media (max-width: 320px) {
+    .extra-label {
+      display: none;
+    }
+  }
+</style>

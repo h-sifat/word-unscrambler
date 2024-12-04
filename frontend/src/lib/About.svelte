@@ -16,7 +16,7 @@
     the algorithm here.
   </p>
 
-  <p class="mt-2 font-bold">Shortcuts</p>
+  <p class="my-2 font-bold">⋆✩✧ Shortcuts ✧✩⋆</p>
   <p>
     Clear results:
     <kbd class="kbd kbd-xs">Ctrl/Cmd + l</kbd>
@@ -24,5 +24,9 @@
   <p>
     Focus search bar:
     <kbd class="kbd kbd-xs">Ctrl/Cmd + k</kbd>
+  </p>
+  <p>
+    Go to definition:
+    <kbd class="kbd kbd-xs">Ctrl/Cmd + Click</kbd>
   </p>
 </div>

@@ -49,7 +49,15 @@
   let isAnimationRunning = $state(false);
   let hasClicked = $state(false);
 
-  function handleClick() {
+  function handleClick(
+    e: MouseEvent & { currentTarget: EventTarget & HTMLAnchorElement }
+  ) {
+    // Let it go to the definition link
+    if (e.ctrlKey || e.metaKey) return;
+
+    // Don't go to the definition as metaKey is not pressed
+    e.preventDefault();
+
     writeClipboardText(word);
 
     if (!hasClicked) {
@@ -61,12 +69,15 @@
   }
 </script>
 
-<button
+<a
   class={clsx(
     "px-1 py-0.5 border border-black border-dashed hover:border-solid relative",
-    "hover:border-accent rounded ring-accent bg-base-100",
+    "hover:border-accent rounded ring-accent bg-base-100 no-underline",
     { "active:ring-2 active:ring-inset": !isAnimationRunning }
   )}
+  target="_blank"
+  rel="noreferrer"
+  href="https://www.wordnik.com/words/{word}"
   onclick={handleClick}
   >{word}
 
@@ -100,7 +111,7 @@
       ></span>
     {/each}
   {/if}
-</button>
+</a>
 
 <style>
   .copy-confetti-animation {
