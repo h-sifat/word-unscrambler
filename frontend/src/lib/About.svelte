@@ -11,8 +11,23 @@
   <p>
     This app is a hobby project I built while learning Rust and Svelte 5. View
     the code on
-    <a class="link link-accent" href={repoLink}>GitHub</a> or
-    <a class="link link-accent" href={visualizerLink}> visualize </a>
+    <a
+      href={repoLink}
+      target="_blank"
+      rel="noreferrer"
+      class="link link-accent"
+    >
+      GitHub
+    </a>
+    or
+    <a
+      target="_blank"
+      rel="noreferrer"
+      href={visualizerLink}
+      class="link link-accent"
+    >
+      visualize
+    </a>
     the algorithm here.
   </p>
 
