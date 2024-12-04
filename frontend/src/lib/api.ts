@@ -4,7 +4,7 @@ import { sortWordsBasedOnLength } from "./util";
 import { BASE_URL } from "../config";
 
 export class API {
-  readonly #controller = new AbortController();
+  #controller = new AbortController();
 
   readonly #stateStore: Readable<API_State>;
   readonly #updateStore: Subscriber<API_State>;
@@ -24,6 +24,7 @@ export class API {
 
   #setState(state: API_State) {
     this.#state = state;
+
     this.#updateStore(this.#state);
   }
 
@@ -78,7 +79,10 @@ export class API {
   stopOrReset() {
     if (this.isIdle) return;
 
-    if (this.isRunning) this.#controller.abort();
+    if (this.isRunning) {
+      this.#controller.abort();
+      this.#controller = new AbortController();
+    }
     this.#setState({ status: Status.IDLE });
   }
 }
