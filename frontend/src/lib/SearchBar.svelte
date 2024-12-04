@@ -26,6 +26,7 @@
 
   let query = $state("");
   let animatedQuery = $state("");
+  let hasFocus = $state(false);
   let { isValid: isQueryValid, message: queryErrorMessage } = $derived(
     validateQuery({ query, prevQuery })
   );
@@ -137,7 +138,7 @@
 <form onsubmit={handleSubmit}>
   <label
     class={clsx(
-      "flex items-center mx-auto mt-8  max-w-96 gap-5",
+      "flex items-center justify-between mx-auto mt-8 max-w-96",
       "border-2 border-black input input-bordered",
       { "shake input-error": inputError }
     )}
@@ -150,11 +151,13 @@
       bind:this={inputElement}
       value={displayedInputValue}
       placeholder="Search (Ctrl + k)"
-      class={"grow placeholder:select-none"}
+      class="w-0 grow placeholder:select-none"
       onbeforeinput={validateDataBeforeInput}
       onfocus={() => {
+        hasFocus = true;
         if (isCompleted || isError) status = Status.IDLE;
       }}
+      onblur={() => (hasFocus = false)}
     />
 
     <div class="tooltip" data-tip={isIdle && isQueryValid ? "Enter" : null}>
@@ -215,7 +218,7 @@
 
   <p
     class={clsx("text-xs text-center mt-0.5 text-error invisible", {
-      "!visible": !isQueryValid && query,
+      "!visible": !isQueryValid && query && hasFocus,
     })}
   >
     {queryErrorMessage}&nbsp;

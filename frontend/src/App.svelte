@@ -63,7 +63,7 @@
     />
   </div>
 
-  <div class="w-4/5 mx-auto grow">
+  <div class="w-4/5 mx-auto grow mt-1">
     {#if $state.status === Status.COMPLETED}
       <Results {onDelete} result={$state.data} />
     {:else if $state.status === Status.ERROR}

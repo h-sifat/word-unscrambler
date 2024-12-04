@@ -8,7 +8,9 @@
   } = $props<{ query: string; resultCount: number; searchTime: number }>();
 </script>
 
-<div class="relative flex items-center justify-between mb-8 select-none">
+<div
+  class="relative flex flex-col items-center justify-between mb-8 select-none sm:flex-row gap-1"
+>
   <div></div>
 
   <div class="text-center">
@@ -19,5 +21,7 @@
     </p>
   </div>
 
-  <DeleteResultBtn />
+  <div class="mt-2 sm:mt-0">
+    <DeleteResultBtn />
+  </div>
 </div>
