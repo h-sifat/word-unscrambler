@@ -40,7 +40,7 @@ async fn main() -> eyre::Result<(), std::io::Error> {
             ))
     })
     .workers(config.num_workers)
-    .bind(("127.0.0.1", config.port))?
+    .bind(("0.0.0.0", config.port))?
     .run()
     .await
 }

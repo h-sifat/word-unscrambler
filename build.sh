@@ -30,7 +30,8 @@ cd ..
 
 echo "Copying new frontend..."
 
-rm -rf ./dist/static
+rm -rf ./dist
+mkdir ./dist
 cp -r ./frontend/dist ./dist/static
 
 echo $'\nDone'
@@ -46,12 +47,12 @@ echo $'\nDone'
 cd ..
 
 echo "Copying new backend..."
-cp -r ./backend/target/release/word-unscrambler ./dist
+cp -r ./backend/target/release/word-unscrambler ./dist/app
 cp -r ./backend/data ./dist/data
 echo $'\nDone'
 
 # Execute a command if --run flag is provided
 if [[ "$run_flag" == true ]]; then
   cd ./dist
-  ./word-unscrambler
+  ./app
 fi
